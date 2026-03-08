@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life in Letters — Gmail Biography Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --ink: #1a1208;
+    --paper: #f5f0e8;
+    --aged: #e8dfc8;
+    --sepia: #8b6914;
+    --rust: #c0392b;
+    --gold: #c9a84c;
+    --fade: #a89878;
+    --dark-paper: #2a2018;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 2rem 3rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .masthead { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+  .masthead em { font-style: italic; color: var(--gold); }
+  .subhead { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; color: var(--fade); text-transform: uppercase; margin-top: 0.5rem; }
+  .dateline { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--fade); text-align: right; }
+
+  main { max-width: 920px; margin: 0 auto; padding: 3rem 2rem; }
+
+  .setup-panel { border: 1px solid var(--ink); padding: 2.5rem; position: relative; background: #fff; box-shadow: 4px 4px 0 var(--ink); margin-bottom: 2rem; }
+  .setup-panel::before { content: 'CONFIGURATION'; position: absolute; top: -0.6rem; left: 1.5rem; background: #fff; padding: 0 0.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.15em; color: var(--sepia); }
+
+  .field-group { margin-bottom: 1.5rem; }
+  label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--sepia); text-transform: uppercase; margin-bottom: 0.5rem; }
+  input, select, textarea { width: 100%; border: 1px solid var(--ink); padding: 0.75rem 1rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; background: var(--paper); color: var(--ink); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  input:focus, select:focus, textarea:focus { border-color: var(--sepia); box-shadow: 2px 2px 0 var(--sepia); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .field-hint { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--fade); margin-top: 0.4rem; line-height: 1.6; }
+  .field-hint a { color: var(--rust); text-decoration: none; border-bottom: 1px dotted var(--rust); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .btn { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase; border: 2px solid var(--ink); padding: 0.85rem 2rem; cursor: pointer; background: var(--ink); color: var(--paper); transition: all 0.15s; display: inline-flex; align-items: center; gap: 0.5rem; }
+  .btn:hover { background: var(--sepia); border-color: var(--sepia); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: transparent; color: var(--ink); }
+  .btn-secondary:hover { background: var(--aged); color: var(--ink); border-color: var(--ink); }
+
+  .instructions { border-left: 3px solid var(--gold); padding: 1.5rem; background: #fffdf5; margin-bottom: 2rem; font-size: 0.85rem; line-height: 1.8; }
+  .instructions h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 0.75rem; }
+  .instructions ol { padding-left: 1.2rem; }
+  .instructions li { margin-bottom: 0.5rem; }
+  .instructions code { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; background: var(--aged); padding: 0.1rem 0.3rem; }
+
+  .pipeline-diagram { display: flex; align-items: center; gap: 0; margin: 1.25rem 0 0; flex-wrap: wrap; gap: 2px; }
+  .pipeline-step { background: var(--ink); color: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; padding: 0.5rem 0.6rem; text-align: center; line-height: 1.4; flex: 1; min-width: 70px; }
+  .pipeline-step span { display: block; font-size: 0.9rem; margin-bottom: 0.15rem; }
+  .pipeline-arrow { color: var(--sepia); font-size: 1rem; padding: 0 0.1rem; flex-shrink: 0; }
+
+  .progress-area { display: none; margin: 2rem 0; }
+  .progress-area.active { display: block; }
+  .progress-log { border: 1px solid var(--ink); background: var(--dark-paper); color: #a8d8a8; font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; padding: 1.5rem; height: 240px; overflow-y: auto; line-height: 1.8; }
+  .progress-log .line { animation: fadeIn 0.3s forwards; }
+  .progress-log .line.err { color: #e88; }
+  .progress-log .line.ok { color: #8e8; }
+  .progress-log .line.info { color: #8ae; }
+  .progress-log .line.warn { color: #fa8; }
+  @keyframes fadeIn { from{opacity:0}to{opacity:1} }
+  .progress-bar-wrap { border: 1px solid var(--ink); height: 8px; margin-top: 0.75rem; background: var(--aged); overflow: hidden; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--sepia), var(--gold)); width: 0%; transition: width 0.4s ease; }
+  .progress-status { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--fade); margin-top: 0.5rem; }
+
+  .biography { display: none; }
+  .biography.active { display: block; }
+
+  .bio-header { border-bottom: 3px double var(--ink); padding-bottom: 1.5rem; margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; }
+  .bio-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 700; line-height: 1.1; }
+  .bio-subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--fade); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.3rem; }
+  .bio-meta { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--fade); line-height: 1.8; flex-shrink: 0; }
+
+  .bio-section { margin-bottom: 3rem; }
+  .bio-section-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rust); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem; }
+  .bio-section-label::after { content: ''; flex: 1; height: 1px; background: var(--rust); opacity: 0.3; }
+
+  .bio-prose { font-size: 1rem; line-height: 1.95; color: #2a1f0a; }
+  .bio-prose p { margin-bottom: 1.1rem; }
+
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+  .tag { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; border: 1px solid var(--sepia); padding: 0.25rem 0.6rem; color: var(--sepia); background: #fffbf2; }
+
+  .timeline-item { display: grid; grid-template-columns: 110px 1fr; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px dotted var(--aged); }
+  .timeline-year { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--sepia); padding-top: 0.1rem; }
+  .timeline-text { font-size: 0.9rem; line-height: 1.7; }
+
+  .people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
+  .person-card { border: 1px solid var(--aged); padding: 1rem; background: #fffdf5; }
+  .person-name { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 0.25rem; }
+  .person-detail { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--fade); line-height: 1.5; }
+
+  .pullquote { border-left: 4px solid var(--gold); padding: 1rem 1.5rem; margin: 2rem 0; font-family: 'Playfair Display', serif; font-size: 1.15rem; font-style: italic; color: var(--sepia); background: #fffbf0; }
+
+  .error-box { border: 2px solid var(--rust); background: #fff5f5; padding: 1.5rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; color: var(--rust); display: none; margin: 1rem 0; line-height: 1.7; }
+  .error-box.active { display: block; }
+
+  .oauth-btn { display: inline-flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1.5rem; border: 2px solid #4285f4; background: #4285f4; color: white; font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.15s; }
+  .oauth-btn:hover { background: #2b6fd4; border-color: #2b6fd4; }
+
+  .status-badge { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; padding: 0.2rem 0.6rem; border: 1px solid; display: inline-block; margin-left: 0.5rem; }
+  .status-badge.connected { border-color: green; color: green; background: #f0fff0; }
+  .status-badge.disconnected { border-color: var(--rust); color: var(--rust); background: #fff5f5; }
+
+  .raw-toggle { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; cursor: pointer; color: var(--fade); border: none; background: none; text-decoration: underline dotted; margin-top: 2rem; display: block; }
+  .raw-json { display: none; background: var(--dark-paper); color: #8ae; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; padding: 1.5rem; overflow-x: auto; margin-top: 0.5rem; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+  .raw-json.active { display: block; }
+
+  footer { border-top: 1px solid var(--aged); padding: 1.5rem 3rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--fade); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="masthead">Life in <em>Letters</em></div>
+    <div class="subhead">Gmail Biography Agent · Full Bodies · Chunked Pipeline · Claude</div>
+  </div>
+  <div class="dateline"><div>A personal archaeology</div><div>of your digital correspondence</div></div>
+</header>
+
+<main>
+
+  <div class="instructions">
+    <h3>Setup (one-time, ~10 minutes)</h3>
+    <ol>
+      <li>Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → create a project → enable <strong>Gmail API</strong></li>
+      <li>APIs & Services → Credentials → Create → <strong>OAuth 2.0 Client ID</strong> → Web application</li>
+      <li>Add this page's exact URL as an <strong>Authorized redirect URI</strong></li>
+      <li>Copy your Client ID below, connect, and run</li>
+    </ol>
+    <div class="pipeline-diagram">
+      <div class="pipeline-step"><span>📬</span>Gmail API<br>full bodies</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step"><span>🔍</span>Filter<br>noise/lists</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step"><span>✂️</span>Chunk<br>10/batch</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step"><span>🧠</span>Claude<br>per batch</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step"><span>🔗</span>Final<br>synthesis</div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step"><span>📖</span>Biography</div>
+    </div>
+  </div>
+
+  <div class="setup-panel">
+    <div class="field-group">
+      <label>Google OAuth Client ID</label>
+      <input type="text" id="clientId" placeholder="xxxxxxxxxxxx.apps.googleusercontent.com" />
+      <div class="field-hint">From Google Cloud Console → Credentials. Scope requested: <code>gmail.readonly</code> (read-only, no modifications)</div>
+    </div>
+
+    <div class="field-group">
+      <label>Gmail search query <span style="opacity:0.5">(optional)</span></label>
+      <input type="text" id="gmailQuery" placeholder='e.g. "after:2010/01/01 before:2015/01/01" or "-from:noreply" or blank for recent' />
+      <div class="field-hint">Standard Gmail search syntax. Tip: <code>-from:noreply -label:newsletters</code> pre-filters spam before fetch.</div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label>Emails to fetch</label>
+        <select id="emailCount">
+          <option value="20">20 — Quick test</option>
+          <option value="50" selected>50 — Good sample</option>
+          <option value="100">100 — Rich portrait</option>
+          <option value="150">150 — Deep dive</option>
+        </select>
+        <div class="field-hint">Full bodies are fetched. More = slower + more Claude API calls.</div>
+      </div>
+      <div class="field-group">
+        <label>Biography focus</label>
+        <select id="bioFocus">
+          <option value="general">General life portrait</option>
+          <option value="career">Career & professional arc</option>
+          <option value="relationships">People & relationships</option>
+          <option value="timeline">Chronological timeline</option>
+          <option value="inner">Inner life & emotions</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label>Context about yourself <span style="opacity:0.5">(helps Claude significantly)</span></label>
+      <textarea id="userContext" placeholder="e.g. I'm a software engineer, lived in NYC 2000–2012 then London, married 2015, two kids, worked at Google then started my own company..."></textarea>
+    </div>
+
+    <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+      <button class="oauth-btn" onclick="connectGmail()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        Connect Gmail
+      </button>
+      <span id="authStatus" class="status-badge disconnected">● Not connected</span>
+      <button class="btn" id="analyzeBtn" onclick="runAnalysis()" disabled style="margin-left:auto">
+        Analyse Emails →
+      </button>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="progress-area" id="progressArea">
+    <div class="progress-log" id="progressLog"></div>
+    <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-status" id="progressStatus"></div>
+  </div>
+
+  <div class="biography" id="biography">
+    <div class="bio-header">
+      <div>
+        <div class="bio-title" id="bioName">A Life Examined</div>
+        <div class="bio-subtitle" id="bioSubtitle">Compiled from personal correspondence</div>
+      </div>
+      <div class="bio-meta" id="bioMeta"></div>
+    </div>
+    <div id="bioContent"></div>
+    <button class="raw-toggle" onclick="toggleRaw()">↓ Show raw analysis JSON</button>
+    <pre class="raw-json" id="rawJson"></pre>
+    <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="resetApp()">← Start over</button>
+      <button class="btn" onclick="downloadBio()">↓ Download biography</button>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>Life in Letters v2 · Full body extraction · Chunked analysis pipeline</span>
+  <span>Read-only Gmail access · Emails never stored · Browser-only processing</span>
+</footer>
+
+<script>
+let accessToken = null;
+let rawAnalysis = null;
+
+// ── OAUTH ─────────────────────────────────────────────────────────────────────
+function connectGmail() {
+  const clientId = document.getElementById('clientId').value.trim();
+  if (!clientId) return showError('Please enter your Google OAuth Client ID first.');
+  const redirectUri = window.location.href.split('?')[0].split('#')[0];
+  const params = new URLSearchParams({
+    client_id: clientId, redirect_uri: redirectUri,
+    response_type: 'token',
+    scope: 'https://www.googleapis.com/auth/gmail.readonly',
+    prompt: 'consent',
+  });
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+}
+
+function handleOAuthCallback() {
+  const hash = window.location.hash.substring(1);
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  const token = params.get('access_token');
+  if (token) {
+    accessToken = token;
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setConnected(true);
+  }
+}
+
+function setConnected(ok) {
+  const badge = document.getElementById('authStatus');
+  badge.textContent = ok ? '● Connected' : '● Not connected';
+  badge.className = 'status-badge ' + (ok ? 'connected' : 'disconnected');
+  document.getElementById('analyzeBtn').disabled = !ok;
+}
+
+// ── GMAIL API ─────────────────────────────────────────────────────────────────
+async function gmailGet(path) {
+  const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/${path}`, {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+  if (!res.ok) throw new Error(`Gmail ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  return res.json();
+}
+
+async function fetchEmailIds(query, maxResults) {
+  const q = query ? '&q=' + encodeURIComponent(query) : '';
+  const data = await gmailGet(`messages?maxResults=${maxResults}${q}`);
+  return (data.messages || []).map(m => m.id);
+}
+
+function decodeBase64(str) {
+  try { return decodeURIComponent(escape(atob(str.replace(/-/g,'+').replace(/_/g,'/')))); }
+  catch { return ''; }
+}
+
+function stripHtml(html) {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'')
+    .replace(/<head[\s\S]*?<\/head>/gi,'')
+    .replace(/<\/(p|div|br|li|tr|h[1-6])>/gi,'\n').replace(/<br\s*\/?>/gi,'\n')
+    .replace(/<[^>]+>/g,'')
+    .replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+    .replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+}
+
+function extractText(payload) {
+  if (!payload) return '';
+  if (payload.body?.data) {
+    const d = decodeBase64(payload.body.data);
+    return payload.mimeType === 'text/html' ? stripHtml(d) : d;
+  }
+  if (payload.parts) {
+    const plain = payload.parts.find(p => p.mimeType === 'text/plain');
+    if (plain?.body?.data) return decodeBase64(plain.body.data);
+    const html = payload.parts.find(p => p.mimeType === 'text/html');
+    if (html?.body?.data) return stripHtml(decodeBase64(html.body.data));
+    for (const p of payload.parts) { const t = extractText(p); if (t) return t; }
+  }
+  return '';
+}
+
+function getHeader(headers, name) {
+  const h = (headers||[]).find(h => h.name.toLowerCase() === name.toLowerCase());
+  return h ? h.value : '';
+}
+
+function isNoise(email) {
+  const from = (email.from||'').toLowerCase();
+  const sub = (email.subject||'').toLowerCase();
+  if (['noreply','no-reply','donotreply','newsletter','notifications@','alerts@','mailer@',
+    'bounce@','postmaster@','mailchimp','sendgrid','marketing@','unsubscribe'].some(n => from.includes(n))) return true;
+  if (['unsubscribe','newsletter','digest','order confirmation','your order','transaction',
+    'verify your email','confirm your email','account statement'].some(n => sub.includes(n))) return true;
+  if ((email.body||'').replace(/\s/g,'').length < 100) return true;
+  return false;
+}
+
+async function fetchFullEmail(id) {
+  const data = await gmailGet(`messages/${id}?format=full`);
+  const h = data.payload?.headers || [];
+  const body = extractText(data.payload).slice(0, 3000); // cap per email
+  return {
+    from: getHeader(h,'From'), to: getHeader(h,'To'),
+    subject: getHeader(h,'Subject'), date: getHeader(h,'Date'), body,
+  };
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────────────
+function log(msg, type='') {
+  const el = document.getElementById('progressLog');
+  const div = document.createElement('div');
+  div.className = 'line ' + type;
+  const t = new Date().toLocaleTimeString('en',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  div.textContent = `[${t}] ${msg}`;
+  el.appendChild(div); el.scrollTop = el.scrollHeight;
+}
+function setProgress(pct, status='') {
+  document.getElementById('progressBar').style.width = pct + '%';
+  if (status) document.getElementById('progressStatus').textContent = status;
+}
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.innerHTML = `<strong>Error:</strong> ${msg}<br><br><strong>Common fixes:</strong><br>
+  · Redirect URI in Google Cloud must exactly match this page URL<br>
+  · Gmail API must be enabled for your project<br>
+  · OAuth consent screen must be configured (add yourself as a test user)`;
+  el.classList.add('active');
+}
+
+// ── CLAUDE ────────────────────────────────────────────────────────────────────
+async function callClaude(system, user) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+      system, messages: [{ role: 'user', content: user }],
+    }),
+  });
+  if (!res.ok) throw new Error(`Claude API ${res.status}: ${(await res.text()).slice(0,200)}`);
+  const data = await res.json();
+  return data.content.map(b => b.text||'').join('');
+}
+
+function parseJSON(text) {
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+// ── PIPELINE ──────────────────────────────────────────────────────────────────
+const BATCH_SIZE = 10;
+
+async function summariseBatch(emails, idx, focus, ctx) {
+  const emailsText = emails.map((e,i) =>
+    `EMAIL ${i+1}\nDate: ${e.date}\nFrom: ${e.from}\nTo: ${e.to}\nSubject: ${e.subject}\n---\n${e.body}`
+  ).join('\n\n════════\n\n');
+
+  const system = `You are an expert biographer extracting biographical signals from real email correspondence.
+Return ONLY valid JSON, no markdown, no preamble. Focus on what is genuinely revealing about this person's life.
+Ignore pleasantries, logistics, and boilerplate. Extract real insights about events, relationships, emotions, decisions.
+Focus area: ${focus}.
+Return exactly:
+{"period":"approximate date range","life_signals":["specific biographical observation"],"people_mentioned":[{"name":"...","context":"..."}],"events":["notable event or milestone"],"emotions_themes":["emotional tone or concern"],"notable_quotes":["revealing phrase written BY the person (not to them)"]}`;
+
+  const user = `${ctx ? `Subject context: ${ctx}\n\n` : ''}Batch ${idx+1} — ${emails.length} emails:\n\n${emailsText}`;
+  return parseJSON(await callClaude(system, user));
+}
+
+async function synthesise(batches, total, focus, ctx) {
+  const focusMap = {
+    general: 'Write a rich, balanced life portrait covering all aspects.',
+    career: 'Emphasise career trajectory, professional identity, and work relationships.',
+    relationships: 'Emphasise the people in this person\'s life and relationship patterns.',
+    timeline: 'Emphasise chronological narrative and specific life milestones.',
+    inner: 'Emphasise emotional life, inner conflicts, hopes, fears, and personal growth.',
+  };
+
+  const summaryText = batches.map((b,i) =>
+    `BATCH ${i+1} (${b.period||'?'}):\nSignals: ${(b.life_signals||[]).join('; ')}\nPeople: ${(b.people_mentioned||[]).map(p=>`${p.name}(${p.context})`).join(', ')}\nEvents: ${(b.events||[]).join('; ')}\nEmotions: ${(b.emotions_themes||[]).join('; ')}\nQuotes: ${(b.notable_quotes||[]).join(' | ')}`
+  ).join('\n\n---\n\n');
+
+  const system = `You are a perceptive, literary biographer synthesising email analysis into a compelling life story.
+Write with warmth, insight, and literary quality. ${focusMap[focus]||focusMap.general}
+Return ONLY valid JSON, no markdown, no preamble:
+{"name_or_identifier":"person name or identifier","time_span":"years covered","narrative_portrait":"4-6 paragraphs separated by \\n\\n","key_themes":["up to 10 themes"],"notable_people":[{"name":"...","relationship":"...","significance":"..."}],"timeline_moments":[{"year_approx":"...","event":"..."}],"recurring_preoccupations":["..."],"emotional_arc":"1-2 sentences on how this person evolved","writing_voice":"how this person communicates","pullquote":"one striking memorable observation","confidence_note":"honest note on sample limitations"}`;
+
+  const user = `${ctx ? `Subject context: "${ctx}"\n\n` : ''}Total emails: ${total}\n\nBatch summaries:\n\n${summaryText}`;
+  return parseJSON(await callClaude(system, user));
+}
+
+// ── MAIN ──────────────────────────────────────────────────────────────────────
+async function runAnalysis() {
+  if (!accessToken) return showError('Please connect Gmail first.');
+  document.getElementById('errorBox').classList.remove('active');
+  document.getElementById('progressLog').innerHTML = '';
+  document.getElementById('biography').classList.remove('active');
+  document.getElementById('progressArea').classList.add('active');
+  document.getElementById('analyzeBtn').disabled = true;
+  setProgress(2, 'Starting…');
+
+  const query = document.getElementById('gmailQuery').value.trim();
+  const count = parseInt(document.getElementById('emailCount').value);
+  const focus = document.getElementById('bioFocus').value;
+  const ctx   = document.getElementById('userContext').value.trim();
+
+  try {
+    log(`Fetching up to ${count} email IDs…`, 'info');
+    const ids = await fetchEmailIds(query, count);
+    log(`Found ${ids.length} IDs. Fetching full bodies…`, 'ok');
+    setProgress(8, 'Fetching emails…');
+
+    const emails = []; let noise = 0;
+    for (let i = 0; i < ids.length; i++) {
+      try {
+        const e = await fetchFullEmail(ids[i]);
+        if (isNoise(e)) { noise++; log(`  Skipped noise: "${(e.subject||'').slice(0,50)}"`, 'warn'); }
+        else { emails.push(e); if (emails.length % 5 === 0) log(`  ${emails.length} real emails (${noise} noise filtered)…`); }
+      } catch(err) { log(`  Failed ${ids[i]}: ${err.message}`, 'err'); }
+      setProgress(8 + Math.round((i/ids.length)*44), `Email ${i+1}/${ids.length}…`);
+    }
+
+    log(`Loaded ${emails.length} emails, ${noise} filtered.`, 'ok');
+    if (!emails.length) throw new Error('No usable emails found. Adjust your search query.');
+
+    const batches = [];
+    for (let i = 0; i < emails.length; i += BATCH_SIZE) batches.push(emails.slice(i, i+BATCH_SIZE));
+    log(`Analysing ${batches.length} batch${batches.length>1?'es':''} with Claude…`, 'info');
+    setProgress(54, 'Analysing…');
+
+    const summaries = [];
+    for (let i = 0; i < batches.length; i++) {
+      log(`  Batch ${i+1}/${batches.length} — ${batches[i].length} emails…`);
+      summaries.push(await summariseBatch(batches[i], i, focus, ctx));
+      setProgress(54 + Math.round(((i+1)/batches.length)*28), `Batch ${i+1}/${batches.length} done`);
+    }
+
+    log(`Synthesising final biography…`, 'info');
+    setProgress(84, 'Writing biography…');
+    const analysis = await synthesise(summaries, emails.length, focus, ctx);
+    rawAnalysis = analysis;
+
+    log(`Biography complete!`, 'ok');
+    setProgress(100, 'Done');
+    renderBiography(analysis, emails.length, noise);
+
+    setTimeout(() => {
+      document.getElementById('progressArea').classList.remove('active');
+      document.getElementById('biography').classList.add('active');
+      document.getElementById('biography').scrollIntoView({behavior:'smooth'});
+    }, 800);
+
+  } catch(err) {
+    log('Fatal: ' + err.message, 'err');
+    showError(err.message);
+  } finally {
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderBiography(a, count, noise) {
+  document.getElementById('bioName').textContent = a.name_or_identifier || 'A Life Examined';
+  document.getElementById('bioSubtitle').textContent = `Compiled from ${count} emails · ${a.time_span||''}`;
+  document.getElementById('bioMeta').innerHTML = `${count} emails analysed<br>${noise} noise filtered<br>${a.time_span||''}`;
+  document.getElementById('rawJson').textContent = JSON.stringify(a, null, 2);
+
+  let html = '';
+  html += `<div class="bio-section"><div class="bio-section-label">Portrait</div><div class="bio-prose">
+    ${(a.narrative_portrait||'').split('\n\n').map(p=>`<p>${p.trim()}</p>`).join('')}
+  </div></div>`;
+
+  if (a.pullquote) html += `<div class="pullquote">"${a.pullquote}"</div>`;
+
+  if (a.emotional_arc) html += `<div class="bio-section"><div class="bio-section-label">Emotional Arc</div><div class="bio-prose"><p>${a.emotional_arc}</p></div></div>`;
+
+  if (a.timeline_moments?.length) {
+    html += `<div class="bio-section"><div class="bio-section-label">Timeline</div><div>`;
+    a.timeline_moments.forEach(t => {
+      html += `<div class="timeline-item"><div class="timeline-year">${t.year_approx||'?'}</div><div class="timeline-text">${t.event||''}</div></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (a.notable_people?.length) {
+    html += `<div class="bio-section"><div class="bio-section-label">People</div><div class="people-grid">`;
+    a.notable_people.forEach(p => {
+      html += `<div class="person-card"><div class="person-name">${p.name||''}</div><div class="person-detail">${p.relationship||''}<br>${p.significance||''}</div></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (a.key_themes?.length) {
+    html += `<div class="bio-section"><div class="bio-section-label">Themes</div><div class="tag-cloud">`;
+    a.key_themes.forEach(t => { html += `<span class="tag">${t}</span>`; });
+    html += `</div></div>`;
+  }
+
+  if (a.recurring_preoccupations?.length) {
+    html += `<div class="bio-section"><div class="bio-section-label">Preoccupations</div><div class="tag-cloud">`;
+    a.recurring_preoccupations.forEach(t => { html += `<span class="tag">${t}</span>`; });
+    html += `</div></div>`;
+  }
+
+  if (a.writing_voice) html += `<div class="bio-section"><div class="bio-section-label">Voice & Style</div><div class="bio-prose"><p>${a.writing_voice}</p></div></div>`;
+
+  if (a.confidence_note) {
+    html += `<div style="border-top:1px solid var(--aged);padding-top:1.25rem;margin-top:2rem;">
+      <div class="bio-section-label">Editor's note</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--fade);line-height:1.7;">${a.confidence_note}</div>
+    </div>`;
+  }
+
+  document.getElementById('bioContent').innerHTML = html;
+}
+
+function toggleRaw() { document.getElementById('rawJson').classList.toggle('active'); }
+function resetApp() {
+  ['biography','progressArea','errorBox'].forEach(id => document.getElementById(id).classList.remove('active'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function downloadBio() {
+  if (!rawAnalysis) return;
+  const a = rawAnalysis;
+  let t = `LIFE IN LETTERS — BIOGRAPHY\n${'='.repeat(60)}\n\n`;
+  t += `${a.name_or_identifier||'Unknown'} · ${a.time_span||''}\n\n`;
+  t += `PORTRAIT\n${'─'.repeat(40)}\n${a.narrative_portrait||''}\n\n`;
+  t += `EMOTIONAL ARC\n${'─'.repeat(40)}\n${a.emotional_arc||''}\n\n`;
+  t += `TIMELINE\n${'─'.repeat(40)}\n${(a.timeline_moments||[]).map(e=>`${e.year_approx}: ${e.event}`).join('\n')}\n\n`;
+  t += `PEOPLE\n${'─'.repeat(40)}\n${(a.notable_people||[]).map(p=>`${p.name} — ${p.relationship} — ${p.significance}`).join('\n')}\n\n`;
+  t += `THEMES: ${(a.key_themes||[]).join(', ')}\n\n`;
+  t += `VOICE: ${a.writing_voice||''}\n\nNOTE: ${a.confidence_note||''}\n\nJSON:\n${JSON.stringify(a,null,2)}`;
+  const blob = new Blob([t],{type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const el = document.createElement('a');
+  el.href=url; el.download='life-in-letters.txt'; el.click();
+}
+
+handleOAuthCallback();
+</script>
+</body>
+</html>
